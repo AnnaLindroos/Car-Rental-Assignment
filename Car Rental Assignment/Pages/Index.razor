@@ -1,9 +1,45 @@
 ﻿@page "/"
+@using Car_Rental.Business.Classes
+@using Car_Rental.Common.Interfaces
+@using Car_Rental.Common.Enums
+@inject BookingProcessor bp
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Car Rental Assignment</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Car Rental Assignment</h1>
 
-Welcome to your new app.
+<div class="row">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>RegNo</th>
+                <th>Make</th>
+                <th>Odometer</th>
+                <th>Cost Km</th>
+                <th>Vehicle Type</th>
+                <th>$ Day</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in bp.GetVehicles())
+            {
+                <tr>
+                    <td>@vehicle.RegNo</td>
+                    <td>@vehicle.Make</td>
+                    <td>@vehicle.Odometer</td>
+                    <td>@vehicle.Cost</td>
+                    <td>@vehicle.VehicleType</td>
+                    <td>@vehicle.CostPerDay</td>
+                    <td>@vehicle.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+</div> @*MER HÄR*@
+<br />
+<div class="row"></div> @*MER HÄR*@
+<br />
+<div class="row"></div> @*MER HÄR*@
+
