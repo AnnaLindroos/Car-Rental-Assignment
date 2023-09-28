@@ -7,39 +7,110 @@
 <PageTitle>Car Rental Assignment</PageTitle>
 
 <h1>Car Rental Assignment</h1>
+<br />
 
+<h3>Customers</h3>
 <div class="row">
-    <table class="table table-striped">
+    <table class="table">
         <thead>
+            <tr class="border border-dark">
+                <td><strong>SSN</strong></td>
+                <td><strong>Last Name</strong></td>
+                <td><strong>First Name</strong></td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var person in bp.GetCustomers())
+            {
+                <tr class="border border-dark">
+                    <td><strong>@person.SSN</strong></td>
+                    <td>@person.LastName</td>
+                    <td>@person.FirstName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<br />
+
+<h3>Vehicles</h3>
+<div class="row">
+    <table class="table border border-dark">
+        <thead> 
             <tr>
-                <th>RegNo</th>
-                <th>Make</th>
-                <th>Odometer</th>
-                <th>Cost Km</th>
-                <th>Vehicle Type</th>
-                <th>$ Day</th>
-                <th>Status</th>
+                <td><strong>RegNo</strong></td>
+                <td><strong>Make</strong></td>
+                <td><strong>Odometer</strong></td>
+                <td><strong>Cost Km</strong></td>
+                <td><strong>Vehicle Type</strong></td>
+                <td><strong>$ Day</strong></td>
+                <td><strong>Status</strong></td>
             </tr>
         </thead>
         <tbody>
             @foreach (var vehicle in bp.GetVehicles())
             {
                 <tr>
-                    <td>@vehicle.RegNo</td>
+                    <td><strong>@vehicle.RegNo</strong></td>
                     <td>@vehicle.Make</td>
                     <td>@vehicle.Odometer</td>
-                    <td>@vehicle.Cost</td>
+                    <td>@vehicle.CostKm</td>
                     <td>@vehicle.VehicleType</td>
                     <td>@vehicle.CostPerDay</td>
-                    <td>@vehicle.Status</td>
+                    @if (vehicle.Status.Equals(VehicleStatuses.Booked))
+                    {
+                        <td><span class="badge rounded-pill text-bg-danger">@vehicle.Status</span></td>
+                    }
+                    else
+                    {
+                        <td><span class="badge rounded-pill text-bg-dark">@vehicle.Status</span></td>
+                    }
                 </tr>
             }
         </tbody>
     </table>
+</div> 
 
-</div> @*MER HÄR*@
 <br />
-<div class="row"></div> @*MER HÄR*@
+
+<h3>Bookings</h3>
+<div class="row">
+    <table class="table">
+        <thead>
+            <tr class="border border-dark">
+                <td><strong>RegNo</strong></td>
+                <td><strong>Customer</strong></td>
+                <td><strong>Km Rented</strong></td>
+                <td><strong>Km Returned</strong></td>
+                <td><strong>Rented</strong></td>
+                <td><strong>Returned</strong></td>
+                <td><strong>Cost</strong></td>
+                <td><strong>Status</strong></td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var booking in bp.GetBookings())
+            {
+                <tr class="border border-dark">
+                    <td><strong>@booking.RegNo</strong></td>
+                    <td>@booking.Customer.LastName @booking.Customer.FirstName (@booking.Customer.SSN)</td>
+                    <td>@booking.KmRented</td>
+                    <td>@booking.KmReturned.ToString()</td>
+                    <td>@booking.Rented.ToShortDateString()</td>
+                    <td>@booking.Returned?.ToShortDateString()</td>
+                    <td>@booking.Cost.ToString()</td>
+                    @if(booking.Status.Equals(BookingStatuses.Open))
+                    {
+                        <td><span class="badge text-bg-danger">@booking.Status</span></td>
+                    }
+                    else
+                    {
+                        <td><span class="badge text-bg-success">@booking.Status</span></td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 <br />
-<div class="row"></div> @*MER HÄR*@
 

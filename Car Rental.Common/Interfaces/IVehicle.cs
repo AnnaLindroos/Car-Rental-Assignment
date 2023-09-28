@@ -12,7 +12,7 @@ public interface IVehicle
     string RegNo { get; init; }
     string Make { get; init; }
     int Odometer { get; set; }
-    double Cost { get; init; }
+    double CostKm { get; set; }
     VehicleTypes VehicleType { get; init; }
     double CostPerDay { get; init; }
     VehicleStatuses Status { get; set; }
