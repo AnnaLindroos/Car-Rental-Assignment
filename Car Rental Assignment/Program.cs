@@ -11,6 +11,15 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddSingleton<CollectionData>();
+// När jag använder mig av nedanstående services så startar inte applikationen, lägger till IData till Collectiondata så fungerar det
+//builder.Services.AddSingleton<CollectionData>();
+//builder.Services.AddSingleton<BookingProcessor>();
+
+
+builder.Services.AddSingleton<IData, CollectionData>();
+builder.Services.AddSingleton<BookingProcessor>();
+
+// Min gamla version
+//builder.Services.AddSingleton(bp => new BookingProcessor(new CollectionData()));
 
 await builder.Build().RunAsync();

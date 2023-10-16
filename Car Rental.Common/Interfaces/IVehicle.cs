@@ -1,9 +1,4 @@
-﻿using Car_Rental.Common.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿/* using Car_Rental.Common.Enums;
 
 namespace Car_Rental.Common.Interfaces;
 
@@ -17,3 +12,4 @@ public interface IVehicle
     double CostPerDay { get; init; }
     VehicleStatuses Status { get; set; }
 }
+ */
