@@ -45,14 +45,7 @@
                 <td></td>
                 <td><button type="button" class="btn btn-outline-success" @onclick="@(() => bp.AddVehicle())" disabled="@bp.input.isProcessing">Add</button></td>
                 <td></td>
-                @if (bp.input.isProcessing)
-                    {
-                        <td><span class="badge rounded-pill text-bg-warning">Processing</span></td>
-                    }
-                    else
-                    {
-                        <td></td>
-                    }
+                <td><span class="badge rounded-pill text-bg-warning">@(bp.input.isProcessing ? "Processing" : "")</span></td>
                 </tr>
                 @foreach (var vehicle in bp.GetVehicles())
                 {
