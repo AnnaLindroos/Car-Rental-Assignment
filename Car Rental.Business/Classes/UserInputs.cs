@@ -1,5 +1,4 @@
 ﻿using Car_Rental.Common.Classes;
-using Car_Rental.Common.Enums;
 
 namespace Car_Rental.Business.Classes;
 

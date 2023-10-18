@@ -32,9 +32,7 @@ public class CollectionData : IData
             throw new ArgumentNullException();
 
         return booking;
-    }
-
-    // GETFIELDS METODEN KAN VA SEPARAT SOM KALLAS AV 
+    } 
     public IBooking ReturnVehicle(int vehicleId, int newDistance)
     {
         if (newDistance < 0)
@@ -42,14 +40,15 @@ public class CollectionData : IData
 
         var vehicleToReturn = Single<Vehicle>(v => v.ID.Equals(vehicleId));
         var booking = GetBookings().Single(i => i.Vehicle.RegNo.Equals(vehicleToReturn.RegNo) && i.Status == BookingStatuses.Open);
-        var timeReturned = DateTime.Now;
-        var kmWhenReturned = booking.KmReturned = booking.Vehicle.Odometer + newDistance;
-        booking.Cost = Math.Round((VehicleExtensions.Duration(booking.Rented, timeReturned) * vehicleToReturn.CostPerDay) + (newDistance * vehicleToReturn.CostKm), 2);
+        booking.Returned = DateTime.Now;
+        booking.KmReturned = booking.KmReturned = booking.Vehicle.Odometer + newDistance;
+        booking.Cost = Math.Round((VehicleExtensions.Duration(booking.Rented, DateTime.Now) * vehicleToReturn.CostPerDay) + (newDistance * vehicleToReturn.CostKm), 2);
         booking.Status = BookingStatuses.Closed;
         vehicleToReturn.Status = VehicleStatuses.Available;
         return booking;
     }
-    public List<T> Get<T>(Expression<Func<T, bool>>? expression)
+
+    public List<T>? GetTypeAndFieldsList<T>()
     {
         List<T>? list = null;
         FieldInfo[] allFields = GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -58,9 +57,15 @@ public class CollectionData : IData
             if (field.FieldType == typeof(List<T>))
             {
                 list = field.GetValue(this) as List<T>;
-                break;
+                return list;
             }
         }
+        return null;
+    }
+    public List<T> Get<T>(Expression<Func<T, bool>>? expression)
+    {
+        var list = GetTypeAndFieldsList<T>();
+
         if (list == null)
         {
             throw new ArgumentNullException("List you're trying to get is empty");
@@ -77,32 +82,16 @@ public class CollectionData : IData
     }
     public void Add<T>(T item)
     {
-        List <T> list = null;
-        FieldInfo[] allFields = GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        foreach (var field in allFields)
-        {
-            if (field.FieldType == typeof(List<T>))
-            {
-                list = field.GetValue(this) as List<T>;
-                list.Add(item);
-                break;
-            }
-        }
+        var list = GetTypeAndFieldsList<T>();
+
         if (list == null)
             throw new ArgumentNullException("List is empty");
+        list.Add(item);
     }
     public T? Single<T>(Expression<Func<T, bool>>? expression)
     {
-        List<T>? list = null;
-        FieldInfo[] allFields = GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        foreach (var field in allFields)
-        {
-            if (field.FieldType == typeof(List<T>))
-            {
-                list = field.GetValue(this) as List<T>;
-                break;
-            }
-        }
+        var list = GetTypeAndFieldsList<T>();
+
         if (list == null)
         {
             throw new ArgumentNullException("List is empty");

@@ -9,37 +9,37 @@ namespace Car_Rental.Business.Classes;
 public class BookingProcessor
 {
     private readonly IData _db;
-    public UserInputs _inputs = new();
+    public readonly UserInputs input;
 
-    public BookingProcessor(IData db) => _db = db;
+    public BookingProcessor(IData db, UserInputs inputs) => (_db, input) = (db, inputs);
 
     public async Task RentVehicle(int vehicleId)
     {
         try
         {
-            _inputs.isProcessing = true;
+            input.isProcessing = true;
             await Task.Delay(5000);
-            var booking = _db.RentVehicle(vehicleId, _inputs.newCustomer.ID);
+            var booking = _db.RentVehicle(vehicleId, input.newCustomer.ID);
             _db.Add(booking);
         }
         catch (ArgumentNullException)
         {
-            _inputs.error = "Could not add booking. Please make sure to select a customer";
+            input.error = "Could not add booking. Please make sure to select a customer";
         }
 
-        _inputs.isProcessing = false;
+        input.isProcessing = false;
     }
 
     public IBooking? ReturnVehicle(int vehicleId)
     {
         try
         {
-            var booking = _db.ReturnVehicle(vehicleId, _inputs.newDistance);
+            var booking = _db.ReturnVehicle(vehicleId, input.newDistance);
             return booking;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            _inputs.error = ex.Message;
+            input.error = ex.Message;
         }
         return null;
     }
@@ -50,19 +50,19 @@ public class BookingProcessor
 
     public IEnumerable<Vehicle> GetVehicles(VehicleStatuses status = default)
     {
-        _inputs.error = _inputs.error.ClearString();
+        input.error = input.error.ClearString();
         return _db.Get<Vehicle>(null);
     }
 
     public IEnumerable<IPerson> GetCustomers()
     {
-        _inputs.error = _inputs.error.ClearString();
+        input.error = input.error.ClearString();
         return _db.Get<IPerson>(null);
     }
 
     public IEnumerable<IBooking> GetBookings()
     {
-        _inputs.error = _inputs.error.ClearString();
+        input.error = input.error.ClearString();
         return _db.Get<IBooking>(null);
     }
 
@@ -75,7 +75,7 @@ public class BookingProcessor
         }
         catch (ArgumentNullException)
         {
-            _inputs.error = "Couldn't find a person with that ID";
+            input.error = "Couldn't find a person with that ID";
             return null;
         }
     }
@@ -89,7 +89,7 @@ public class BookingProcessor
         }
         catch (ArgumentNullException)
         {
-            _inputs.error = "Couldn't find a person with that ID";
+            input.error = "Couldn't find a person with that ID";
             return null;
         }
     }
@@ -102,7 +102,7 @@ public class BookingProcessor
         }
         catch (ArgumentNullException)
         {
-            _inputs.error = "Couldn't find a vehicle with that ID";
+            input.error = "Couldn't find a vehicle with that ID";
             return null;
         }
     }
@@ -115,79 +115,79 @@ public class BookingProcessor
         }
         catch (ArgumentNullException)
         {
-            _inputs.error = "Couldn't find a vehicle with that RegNo";
+            input.error = "Couldn't find a vehicle with that RegNo";
             return null;
         }            
     }
     public void AddCustomer()
     {
-        if (_inputs.newCustomer.SSN.ToString().Length < 5 || _inputs.newCustomer.SSN.ToString().Length > 5 || _inputs.newCustomer.LastName.Length <= 0 || _inputs.newCustomer.FirstName.Length <= 0 )
+        if (input.newCustomer.SSN.ToString().Length < 5 || input.newCustomer.SSN.ToString().Length > 5 || input.newCustomer.LastName.Length <= 0 || input.newCustomer.FirstName.Length <= 0 )
         {
-            _inputs.error = "Please enter an SSN with five numbers, and a first name and last name";
+            input.error = "Please enter an SSN with five numbers, and a first name and last name";
             return;
         }
 
         try
         {
-            IPerson newCustomer = new Customer(_db.NextPersonId, _inputs.newCustomer.SSN, _inputs.newCustomer.LastName, _inputs.newCustomer.FirstName);
+            IPerson newCustomer = new Customer(_db.NextPersonId, input.newCustomer.SSN, input.newCustomer.LastName, input.newCustomer.FirstName);
             _db.Add(newCustomer);
             ClearCustomerInput();
         }
         catch (ArgumentNullException ex)
         {
-            _inputs.error = ex.Message;
+            input.error = ex.Message;
         }
     }
 
     public void AddVehicle()
     {
-        if (_inputs.newVehicle.RegNo.Length < 6 || _inputs.newVehicle.RegNo.Length > 6 || _inputs.newVehicle.Make.Length <= 0 )
+        if (input.newVehicle.RegNo.Length < 6 || input.newVehicle.RegNo.Length > 6 || input.newVehicle.Make.Length <= 0 )
         {
-            _inputs.error = "Please enter an RegNo with six symbols, and a make with at least one symbol";
+            input.error = "Please enter an RegNo with six symbols, and a make with at least one symbol";
             return;
         }
 
         try
         {
-            if (_inputs.newVehicle.VehicleType == VehicleTypes.Motorcycle)
+            if (input.newVehicle.VehicleType == VehicleTypes.Motorcycle)
             {
-                Vehicle newMotorcycle = new Motorcycle(_db.NextVehicleId, _inputs.newVehicle.RegNo.ToUpper(), _inputs.newVehicle.Make, _inputs.newVehicle.Odometer, _inputs.newVehicle.CostKm, VehicleTypes.Motorcycle, VehicleStatuses.Available);
+                Vehicle newMotorcycle = new Motorcycle(_db.NextVehicleId, input.newVehicle.RegNo.ToUpper(), input.newVehicle.Make, input.newVehicle.Odometer, input.newVehicle.CostKm, VehicleTypes.Motorcycle, VehicleStatuses.Available);
                 _db.Add(newMotorcycle);
                 return;
             }
             double newCarCostPerDay;
 
-            if (_inputs.newVehicle.VehicleType == VehicleTypes.Sedan)
+            if (input.newVehicle.VehicleType == VehicleTypes.Sedan)
                 newCarCostPerDay = 100;
-            else if (_inputs.newVehicle.VehicleType == VehicleTypes.Combi)
+            else if (input.newVehicle.VehicleType == VehicleTypes.Combi)
                 newCarCostPerDay = 200;
             else
                 newCarCostPerDay = 300;
 
-            Vehicle newCar = new Car(_db.NextVehicleId, _inputs.newVehicle.RegNo.ToUpper(), _inputs.newVehicle.Make, _inputs.newVehicle.Odometer, _inputs.newVehicle.CostKm, _inputs.newVehicle.VehicleType, newCarCostPerDay, VehicleStatuses.Available);
+            Vehicle newCar = new Car(_db.NextVehicleId, input.newVehicle.RegNo.ToUpper(), input.newVehicle.Make, input.newVehicle.Odometer, input.newVehicle.CostKm, input.newVehicle.VehicleType, newCarCostPerDay, VehicleStatuses.Available);
             _db.Add(newCar);
 
             ClearVehicleInput();
         }
         catch (ArgumentNullException ex)
         {
-            _inputs.error = ex.Message;
+            input.error = ex.Message;
         }
 
     }
 
     public void ClearVehicleInput ()
     {
-        _inputs.newVehicle.RegNo = string.Empty;
-        _inputs.newVehicle.Make = string.Empty;
-        _inputs.newVehicle.Odometer = 0;
-        _inputs.newVehicle.CostKm = 0;
+        input.newVehicle.RegNo = string.Empty;
+        input.newVehicle.Make = string.Empty;
+        input.newVehicle.Odometer = 0;
+        input.newVehicle.CostKm = 0;
     }
 
     public void ClearCustomerInput()
     {
-        _inputs.newCustomer.SSN = 0;
-        _inputs.newCustomer.FirstName = string.Empty;
-        _inputs.newCustomer.LastName = string.Empty;
+        input.newCustomer.SSN = 0;
+        input.newCustomer.FirstName = string.Empty;
+        input.newCustomer.LastName = string.Empty;
     }
 }
