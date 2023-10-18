@@ -15,9 +15,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 //builder.Services.AddSingleton<CollectionData>();
 //builder.Services.AddSingleton<BookingProcessor>();
 
-
-builder.Services.AddSingleton<IData, CollectionData>();
 builder.Services.AddSingleton<BookingProcessor>();
+builder.Services.AddSingleton<IData, CollectionData>();
+builder.Services.AddSingleton<UserInputs>();
 
 // Min gamla version
 //builder.Services.AddSingleton(bp => new BookingProcessor(new CollectionData()));

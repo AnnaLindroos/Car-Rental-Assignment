@@ -11,9 +11,9 @@ namespace Car_Rental.Data.Classes;
 
 public class CollectionData : IData
 {
-    readonly List<IPerson> _persons = new List<IPerson>();
-    readonly List<Vehicle> _vehicles = new List<Vehicle>();
-    readonly List<IBooking> _bookings = new List<IBooking>();
+    private readonly List<IPerson> _persons = new List<IPerson>();
+    private readonly List<Vehicle> _vehicles = new List<Vehicle>();
+    private readonly List<IBooking> _bookings = new List<IBooking>();
     public int NextVehicleId => _vehicles.Count.Equals(0) ? 1 : _vehicles.Max(b => b.ID) + 1;
     public int NextPersonId => _persons.Count.Equals(0) ? 1 : _persons.Max(b => b.ID) + 1;
     public int NextBookingId => _bookings.Count.Equals(0) ? 1 : _bookings.Max(b => b.ID) + 1;
@@ -26,7 +26,7 @@ public class CollectionData : IData
         var vehicle = Single<Vehicle>(v => v.ID.Equals(vehicleId));
         var customer = Single<IPerson>(v => v.ID.Equals(customerId));
         vehicle.Status = VehicleStatuses.Booked;
-        IBooking booking = new Booking(NextBookingId, vehicle.RegNo, (Customer)customer, vehicle.Odometer, null, DateTime.Now.AddDays(-1), null, null, BookingStatuses.Open);
+        IBooking booking = new Booking(NextBookingId, vehicle, (Customer)customer, null, DateTime.Now.AddDays(-1), null, null, BookingStatuses.Open);
 
         if (booking == null)
             throw new ArgumentNullException();
@@ -34,34 +34,20 @@ public class CollectionData : IData
         return booking;
     }
 
+    // GETFIELDS METODEN KAN VA SEPARAT SOM KALLAS AV 
     public IBooking ReturnVehicle(int vehicleId, int newDistance)
     {
         if (newDistance < 0)
             throw new ArgumentOutOfRangeException("Distance must be bigger than 0");
 
         var vehicleToReturn = Single<Vehicle>(v => v.ID.Equals(vehicleId));
-        var booking = GetBookings().Single(i => i.RegNo.Equals(vehicleToReturn.RegNo) && i.Status == BookingStatuses.Open);
+        var booking = GetBookings().Single(i => i.Vehicle.RegNo.Equals(vehicleToReturn.RegNo) && i.Status == BookingStatuses.Open);
         var timeReturned = DateTime.Now;
-        var kmWhenReturned = booking.KmReturned = booking.KmRented + newDistance;
+        var kmWhenReturned = booking.KmReturned = booking.Vehicle.Odometer + newDistance;
         booking.Cost = Math.Round((VehicleExtensions.Duration(booking.Rented, timeReturned) * vehicleToReturn.CostPerDay) + (newDistance * vehicleToReturn.CostKm), 2);
         booking.Status = BookingStatuses.Closed;
         vehicleToReturn.Status = VehicleStatuses.Available;
         return booking;
-    }
-
-    public CollectionData() => SeedData();
-
-    void SeedData()
-    {
-        _persons.Add(new Customer(NextPersonId, 12345, "Dal", "Sven"));
-        _persons.Add(new Customer(NextPersonId, 98765, "Ljung", "Hans"));
-        _vehicles.Add(new Car(NextVehicleId, "ABC123", "Volvo", 10000, 1, VehicleTypes.Combi, 200, VehicleStatuses.Available));
-        _vehicles.Add(new Car(NextVehicleId, "DEF456", "Saab", 20000, 1, VehicleTypes.Sedan, 100, VehicleStatuses.Available));
-        _vehicles.Add(new Car(NextVehicleId, "GHI789", "Tesla", 1000, 3, VehicleTypes.Sedan, 100, VehicleStatuses.Booked));
-        _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, 1.5, VehicleTypes.Van, 300, VehicleStatuses.Available));
-        _vehicles.Add(new Motorcycle(NextVehicleId, "MNO234", "Yamaha", 30000, 0.5, VehicleTypes.Motorcycle, VehicleStatuses.Available));
-        _bookings.Add(new Booking(NextBookingId, "GHI789", (Customer)_persons.First(e => e.FirstName == "Sven"), 1000, null, DateTime.Now.Date.AddDays(-1), null, null, BookingStatuses.Open));
-        _bookings.Add(new Booking(NextBookingId, "JKL012", (Customer)_persons.First(e => e.FirstName == "Hans"), 5000, 5000, DateTime.Now.Date.AddDays(-1), DateTime.Now.Date, 300, BookingStatuses.Closed)); 
     }
     public List<T> Get<T>(Expression<Func<T, bool>>? expression)
     {
@@ -135,7 +121,6 @@ public class CollectionData : IData
     {
         return Get<IPerson>(null);
     }
-
     public IEnumerable<IBooking> GetBookings()
     {
         return Get<IBooking>(null);
@@ -143,5 +128,18 @@ public class CollectionData : IData
     public IEnumerable<Vehicle> GetVehicles()
     {
         return Get<Vehicle>(null);
+    }
+    public CollectionData() => SeedData();
+    private void SeedData()
+    {
+        _persons.Add(new Customer(NextPersonId, 12345, "Dal", "Sven"));
+        _persons.Add(new Customer(NextPersonId, 98765, "Ljung", "Hans"));
+        _vehicles.Add(new Car(NextVehicleId, "ABC123", "Volvo", 10000, 1, VehicleTypes.Combi, 200, VehicleStatuses.Available));
+        _vehicles.Add(new Car(NextVehicleId, "DEF456", "Saab", 20000, 1, VehicleTypes.Sedan, 100, VehicleStatuses.Available));
+        _vehicles.Add(new Car(NextVehicleId, "GHI789", "Tesla", 1000, 3, VehicleTypes.Sedan, 100, VehicleStatuses.Booked));
+        _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, 1.5, VehicleTypes.Van, 300, VehicleStatuses.Available));
+        _vehicles.Add(new Motorcycle(NextVehicleId, "MNO234", "Yamaha", 30000, 0.5, VehicleTypes.Motorcycle, VehicleStatuses.Available));
+        _bookings.Add(new Booking(NextBookingId, _vehicles.First(i => i.RegNo == "GHI789"), (Customer)_persons.First(e => e.FirstName == "Sven"), null, DateTime.Now.Date.AddDays(-1), null, null, BookingStatuses.Open));
+        _bookings.Add(new Booking(NextBookingId, _vehicles.First(i => i.RegNo == "JKL012"), (Customer)_persons.First(e => e.FirstName== "Hans"), 5000,  DateTime.Now.Date.AddDays(-1), DateTime.Now.Date, 300, BookingStatuses.Closed));
     }
 }

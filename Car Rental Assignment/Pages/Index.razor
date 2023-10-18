@@ -3,6 +3,7 @@
 @using Car_Rental.Common.Interfaces
 @using Car_Rental.Common.Enums
 @inject BookingProcessor bp
+@inject UserInputs inp
 
 <PageTitle>Car Rental Assignment</PageTitle>
 
@@ -10,7 +11,7 @@
 <br />
 
 
-<div class="alert alert-danger mb-4 @((bp.Inputs.error != string.Empty) ? "opacity-100" : "opacity-0")"><strong>Error</strong> @bp.Inputs.error</div>
+@*<div class="alert alert-danger mb-4 @((inp != null || bp._inputs.error != string.Empty) ? "opacity-100" : "opacity-0")"><strong>Error</strong> @inp.error</div> *@
 
 <h3>Vehicles</h3>
 <div class="row">
@@ -30,12 +31,12 @@
         </thead>
         <tbody>
                 <tr>
-                <td><input @bind="@bp.Inputs.newRegNo" type="text" class="form-control border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" placeholder="RegNo" disabled="@bp.Inputs.isProcessing" /></td>
-                <td><input @bind="@bp.Inputs.newMake" type="text" class="form-control border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" placeholder="Make" disabled="@bp.Inputs.isProcessing" /></td>
-                <td><input @bind="@bp.Inputs.newOdometer" type="text" class="form-control border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" placeholder="Odometer" disabled="@bp.Inputs.isProcessing" /></td>
-                <td><input @bind="@bp.Inputs.newCostKm" type="text" class="form-control border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" placeholder="CostKm" disabled="@bp.Inputs.isProcessing" /></td>
+                <td><input @bind="@inp.newVehicle.RegNo" type="text" class="form-control border-@(inp.isProcessing ? "light-subtle" : "dark")" placeholder="RegNo" disabled="@inp.isProcessing" /></td>
+                <td><input @bind="@inp.newVehicle.Make" type="text" class="form-control border-@(inp.isProcessing ? "light-subtle" : "dark")" placeholder="Make" disabled="@inp.isProcessing" /></td>
+                <td><input @bind="@inp.newVehicle.Odometer" type="text" class="form-control border-@(inp.isProcessing ? "light-subtle" : "dark")" placeholder="Odometer" disabled="@inp.isProcessing" /></td>
+                <td><input @bind="@inp.newVehicle.CostKm" type="text" class="form-control border-@(inp.isProcessing ? "light-subtle" : "dark")" placeholder="CostKm" disabled="@inp.isProcessing" /></td>
                 <td>
-                    <select @bind="@bp.Inputs.newVehicleType" class="form-select border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" aria-label="Default select example" disabled="@bp.Inputs.isProcessing">
+                    <select @bind="@inp.newVehicle.VehicleType" class="form-select border-@(inp.isProcessing ? "light-subtle" : "dark")" aria-label="Default select example" disabled="@inp.isProcessing">
                         @foreach(string vt in bp.VehicleTypeNames)
                         {
                             <option value="@vt">@vt</option>
@@ -43,9 +44,9 @@
                     </select>
                 </td>
                 <td></td>
-                <td><button type="button" class="btn btn-outline-success" @onclick="@(() => bp.AddVehicle())" disabled="@bp.Inputs.isProcessing">Add</button></td>
+                <td><button type="button" class="btn btn-outline-success" @onclick="@(() => bp.AddVehicle())" disabled="@inp.isProcessing">Add</button></td>
                 <td></td>
-                @if (bp.Inputs.isProcessing)
+                @if (inp.isProcessing)
                     {
                         <td><span class="badge rounded-pill text-bg-warning">Processing</span></td>
                     }
@@ -65,20 +66,20 @@
                         <td>@vehicle.CostPerDay</td>
                         @if (vehicle.Status.Equals(VehicleStatuses.Booked))
                         {
-                        <td><input @bind="@bp.Inputs.newDistance" type="text" class="form-control border-light-subtle" placeholder="Distance" disabled="@bp.Inputs.isProcessing" /></td>
-                        <td><button type="button" class="btn btn-outline-success" @onclick="@(e => bp.ReturnVehicle(vehicle.ID))" disabled="@bp.Inputs.isProcessing">Return</button></td>
+                        <td><input @bind="@inp.newDistance" type="text" class="form-control border-light-subtle" placeholder="Distance" disabled="@inp.isProcessing" /></td>
+                        <td><button type="button" class="btn btn-outline-success" @onclick="@(e => bp.ReturnVehicle(vehicle.ID))" disabled="@inp.isProcessing">Return</button></td>
                         }
                         else
                         {
                             <td>
-                            <select @bind="@bp.Inputs.newRentingCustomer" class="form-select border-@(bp.Inputs.isProcessing ? "light-subtle" : "dark")" aria-label="Default select example" disabled="@bp.Inputs.isProcessing">
+                            <select @bind="@inp.newCustomer.ID" class="form-select border-@(inp.isProcessing ? "light-subtle" : "dark")" aria-label="Default select example" disabled="@inp.isProcessing">
                                     @foreach (var person in bp.GetCustomers())
                                     {
                                         <option value="@person.ID">@person.FirstName @person.LastName</option>
                                     }
                                 </select>
                             </td>
-                        <td><button type="button" class="btn btn-outline-primary" @onclick="@(e => bp.RentVehicle(vehicle.ID))" disabled="@bp.Inputs.isProcessing">Rent</button></td>
+                        <td><button type="button" class="btn btn-outline-primary" @onclick="@(e => bp.RentVehicle(vehicle.ID))" disabled="@inp.isProcessing">Rent</button></td>
                         }
                         <td><span class="badge rounded-pill text-bg-@(vehicle.Status.Equals(VehicleStatuses.Booked) ? "danger" : "dark")"> @vehicle.Status</span></td>
                     </tr>
@@ -108,9 +109,9 @@
             @foreach (var booking in bp.GetBookings())
             {
                 <tr class="border border-dark">
-                    <td><strong>@booking.RegNo</strong></td>
+                    <td><strong>@booking.Vehicle.RegNo</strong></td>
                     <td>@booking.Customer.LastName @booking.Customer.FirstName (@booking.Customer.SSN)</td>
-                    <td>@booking.KmRented</td>
+                    <td>@booking.Vehicle.Odometer</td>
                     <td>@booking.KmReturned.ToString()</td>
                     <td>@booking.Rented.ToShortDateString()</td>
                     <td>@booking.Returned?.ToShortDateString()</td>
@@ -136,9 +137,9 @@
         </thead>
         <tbody>
             <tr class="border border-dark">
-                <td><input @bind="@bp.Inputs.newSsn" type="text" class="form-control border-dark" placeholder="SSN" /></td>
-                <td><input @bind="@bp.Inputs.newLastName" type="text" class="form-control border-dark" placeholder="Last Name" /></td>
-                <td><input @bind="@bp.Inputs.newFirstName" type="text" class="form-control border-dark" placeholder="First Name" /></td>
+                <td><input @bind="@inp.newCustomer.SSN" type="text" class="form-control border-dark" placeholder="SSN" /></td>
+                <td><input @bind="@inp.newCustomer.LastName" type="text" class="form-control border-dark" placeholder="Last Name" /></td>
+                <td><input @bind="@inp.newCustomer.FirstName" type="text" class="form-control border-dark" placeholder="First Name" /></td>
                 <td><button type="button" class="btn btn-outline-success" @onclick="@(() => bp.AddCustomer())">Add</button></td>
             </tr>
             @foreach (var person in bp.GetCustomers())
